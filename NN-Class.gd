@@ -4,6 +4,7 @@ class_name NN
 
 var a = []; var b = []; var w = []; var z = []; var y = []
 var currentSet: String; var currentImageN: int; var currentSetLabels: Array
+var stepSize = 1
 
 func σ(x: float):
 	sigmoid(x, 1, 0.3)
@@ -59,7 +60,7 @@ func cost(idealOut: Array) -> float:
 		outCost += (a[len(a)][i] - idealOut[i])**2
 	return outCost
 
-func sensitivities(initIdealOut: Array):
+func sensitivities(initIdealOut: Array) -> Dictionary:
 	var sensitivities: Dictionary = {"weights": [], "biases": [], "inputNeuron": []}
 	var last2terms  # since these stay the same for weights, biases, and last terms, I don't need to calculate it every k cycle
 	y[len(y)] = finalIdealOut(currentSetLabels[currentImageN], a[len(a)])
@@ -71,7 +72,22 @@ func sensitivities(initIdealOut: Array):
 		for j in w[L]:
 			last2terms = dσ(z[L][j]) * 2*(a[L][j]-y[L][j])  # keeping it out of the k cycle
 			sensitivities["biases"][L+1][j] = last2terms  # technicaly there's a 1* before that, but not conna deal with that
+			sensitivities["inputNeuron"][L][j] = 0
 			for k in w[L][j]:
 				sensitivities["weights"][L][j][k] = a[L-1][k] * last2terms
-				sensitivities["inputNeuron"][L-1][j]
-				
+				if L > 0:
+					sensitivities["inputNeuron"][L-1][k] += w[L][j][k] * last2terms
+				else:
+					sensitivities["inputNeuron"][L-1][k] = 0  # don't need to loop every j cycle, fix maybe
+			# set the ideal value for the next layer
+			y[L][j] = a[L][j]+sensitivities["inputNeuron"][L][j]*stepSize  # I believe this is correct, and making it proportional helps make sure you don't overshoot
+	return sensitivities
+
+"""
+-∇Co = the negative/descent gradient of the cost, and I believe that 
+the sensitivity function above gives ∇Co. However, I need ∇C, which means 
+averaging the sensitivities over all training examples
+"""
+
+func backpropigate():
+	pass
