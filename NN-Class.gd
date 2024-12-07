@@ -54,14 +54,16 @@ func cost(idealOut: Array) -> float:
 	return outCost
 
 func sensitivities():
-	var sensitivities: Dictionary = {"weights": [], "biases": [], "previous_layer": []}
+	var sensitivities: Dictionary = {"weights": [], "biases": [], "inNode": []}
 	var last2terms  # since these stay the same for weights, biases, and last terms, I don't need to calculate it every k cycle
 	sensitivities["weights"] = w
 	sensitivities["biases"] = b
+	sensitivities["inNode"] = a
 	for L in len(w):
 		for j in w[L]:
 			last2terms = dσ(z[L][j]) * 2*(a[L][j]-y[j])  # keeping it out of the k cycle
 			sensitivities["biases"][L][j] = last2terms  # technicaly there's a 1* before that, but not conna deal with that
 			for k in w[L][j]:
 				sensitivities["weights"][L][j][k] = a[L-1][k] * last2terms
+				sensitivities["inNode"][L-1][j]
 				
