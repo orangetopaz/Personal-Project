@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://cj7d2gni8ccsy"]
+
+[ext_resource type="Script" path="res://base.gd" id="1_ch1hg"]
+[ext_resource type="Script" path="res://NN-Class.gd" id="2_dq7f3"]
+
+[node name="Base" type="Node"]
+script = ExtResource("1_ch1hg")
+
+[node name="Class" type="Node" parent="."]
+script = ExtResource("2_dq7f3")
