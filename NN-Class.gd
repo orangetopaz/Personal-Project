@@ -38,8 +38,10 @@ func resetImageN(sett: int = 0) -> void:
 func loadImage(imageN: int = currentImageN):
 	a[0] = data[currentSet].slice(imageN*784, (imageN+1)*784)
 	currentImageN += 1
+func currentImageCount():
+	return len(data[currentSet])/784
 
-func propigate_forward():
+func forepropigate():
 	for i in range(1, len(a)):
 		for j in len(a[i]):
 			z[i][j] = b[i][j]
@@ -47,7 +49,7 @@ func propigate_forward():
 				z[i][j] += a[i][k]*w[i][j][k]  # i=layer, j=neuron ending, k=start neuron
 			a[i][j] = σ(z[i][j])
 
-func finalIdealOut(indice: int, size: int):
+func finalIdealOut(size: int, indice: int = currentSetLabels[currentImageN]):
 	var out = []
 	for i in size:
 		out.append(0)
@@ -63,7 +65,7 @@ func cost(idealOut: Array) -> float:
 func sensitivities(initIdealOut: Array) -> Dictionary:
 	var sensitivities: Dictionary = {"weights": [], "biases": [], "inputNeuron": []}
 	var last2terms  # since these stay the same for weights, biases, and last terms, I don't need to calculate it every k cycle
-	y[len(y)] = finalIdealOut(currentSetLabels[currentImageN], a[len(a)])
+	y[len(y)] = finalIdealOut(len(a[len(a)]), currentSetLabels[currentImageN])
 	sensitivities["weights"] = w
 	sensitivities["biases"] = b
 	sensitivities["inputNeuron"] = a
@@ -86,8 +88,38 @@ func sensitivities(initIdealOut: Array) -> Dictionary:
 """
 -∇Co = the negative/descent gradient of the cost, and I believe that 
 the sensitivity function above gives ∇Co. However, I need ∇C, which means 
-averaging the sensitivities over all training examples
+averaging the sensitivities over all training examples. In any case, even if 
+I forgot to add the - in there somewhere, it just means the output set to 0
+is the choice instead of the ones set to 1.
 """
 
+func testAndFindAvgMods():
+	var mods: Dictionary = {"weights": [], "biases": []}
+	var currentSensitivities: Dictionary
+	var currentImageCount = currentImageCount()
+	loadImage()
+	forepropigate()
+	mods = sensitivities(finalIdealOut(len(a[len(a)])))
+	for i in range(1, currentImageCount):
+		loadImage()
+		forepropigate()
+		currentSensitivities = sensitivities(finalIdealOut(len(a[len(a)])))
+		for L in len(w):
+			for j in len(w[L]):
+				mods["biases"][L][j] += sensitivities(finalIdealOut(len(a[len(a)])))["biases"][L][j]
+				for k in w[L][j]:
+					mods["weights"][L][j][k] += sensitivities(finalIdealOut(len(a[len(a)])))["weights"][L][j][k]
+	for L in len(w):
+		for j in len(w[L]):
+			mods["biases"][L][j] /= currentImageCount
+			for k in w[L][j]:
+				mods["weights"][L][j][k] /= currentImageCount
+	return mods
+
 func backpropigate():
-	pass
+	var avgMods = testAndFindAvgMods()
+	for L in len(w):
+		for j in len(w[L]):
+			b[L][j] += avgMods["biases"][L][j]*stepSize
+			for k in w[L][j]:
+				w[L][j][k] += avgMods["weights"][L][j][k]*stepSize
