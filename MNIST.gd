@@ -12,3 +12,5 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	net.trainAStep()
 	print(net.a[-1])
+	print(net.w[-1])
+	print(net.b[-1])

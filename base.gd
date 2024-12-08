@@ -25,9 +25,9 @@ func load_data() -> Dictionary:
 	var train_images = train_images_idx3_ubyte.get_buffer(train_images_idx3_ubyte.get_length()).slice(16)
 	var train_labels = train_labels_idx1_ubyte.get_buffer(train_labels_idx1_ubyte.get_length()).slice(8)
 	
-	print(train_labels_idx1_ubyte.get_length())
-	print(train_labels.size())
-	print(train_images.size())
+	#print(train_labels_idx1_ubyte.get_length())
+	#print(train_labels.size())
+	#print(train_images.size())
 	
 	t10k_images_idx3_ubyte.close()
 	t10k_labels_idx1_ubyte.close()
