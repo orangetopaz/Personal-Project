@@ -4,7 +4,7 @@ class_name NN
 
 var a = []; var aTemplate = []; var b = []; var bTemplate = []; var w = []; var wTemplate = []; var z = []; var y = []
 var currentSet: String; var currentImageN: int; var currentSetLabels: Array
-var stepSize = 1
+var stepSize = 0.1
 
 func σ(x: float):
 	return sigmoid(x, 1, 0.3)
@@ -91,7 +91,7 @@ func genIdealOut(size: int, indice: int = currentSetLabels[currentImageN-1]):
 	out[indice] = 1
 	return out
 
-func cost(idealOut: Array) -> float:
+func cost(idealOut: Array = genIdealOut(len(a[-1]))) -> float:
 	var outCost: float = 0
 	for i in len(a[-1]): 
 		outCost += (a[-1][i] - idealOut[i])**2
@@ -118,6 +118,8 @@ func sensitivities(initIdealOut: Array = genIdealOut(len(a[-1]))) -> Dictionary:
 			sensitivities["inputNeuron"][L+1][j] = 0
 			for k in len(w[L][j]):
 				sensitivities["weights"][L][j][k] = a[L][k] * last2terms
+				print(sensitivities["weights"][L][j][k])
+				print(last2terms)
 				sensitivities["inputNeuron"][L][k] += w[L][j][k] * last2terms
 			# set the ideal value for the next layer
 			y[L][j] = a[L][j]+sensitivities["inputNeuron"][L][j]*stepSize  # I believe this is correct, and making it proportional helps make sure you don't overshoot
@@ -141,8 +143,8 @@ func testAndFindAvgMods(imageCount: int = currentImageCount()):
 	mods["weights"] = sensitivities()["weights"]
 	#print(mods["weights"])
 	mods["biases"] = sensitivities()["biases"]
-	print(mods["biases"][-1])
-	print(b[-1])
+	#print(mods["biases"][-1])
+	#print(b[-1])
 	for i in imageCount:
 		#print(i+1)
 		loadImage()
@@ -162,13 +164,15 @@ func testAndFindAvgMods(imageCount: int = currentImageCount()):
 					mods["weights"][L][j][k] += currentSensitivities["weights"][L][j][k]
 		#if i%1000 == 0:
 			#print(i)
-		print(i)
+		#print(i)
 	for L in len(w):
 		for j in len(w[L]):
 			mods["biases"][L][j] /= imageCount
+			mods["biases"][L][j] *= -1  # negate the function ∇C to get -∇C (negative gradient of cost), so we can minimize (which will eventualy find a floor)instead of maximize(which won't)
 			for k in len(w[L][j]):
 				mods["weights"][L][j][k] /= imageCount
-	print(mods["biases"])
+				mods["weights"][L][j][k] *= -1
+	#print(mods["biases"])
 	#print(mods["weights"])
 	return mods
 
@@ -181,8 +185,8 @@ func backpropigate():
 				w[L][j][k] += avgMods["weights"][L][j][k]*stepSize
 # these are the same, just for naming ease
 func trainAStep():
-	var avgMods = testAndFindAvgMods(1000)
-	print("found!")
+	var avgMods = testAndFindAvgMods(100)
+	#print("found!")
 	for L in len(w):
 		for j in len(w[L]):
 			b[L][j] += avgMods["biases"][L][j]*stepSize
