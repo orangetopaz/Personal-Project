@@ -35,6 +35,18 @@ func setSet(sett: String) -> void:
 	currentSet = sett
 func resetImageN(sett: int = 0) -> void:
 	currentImageN = sett
+
+func printIn(x:int, y:int):
+	var pr = []
+	for i in a[0]:
+		pr.append(round(a[0][i]))
+	for j in y:
+		for i in x:
+			pr.slice((j*x), (j*x)+x)
+		
+		print(pr[j])
+
+"""
 func loadImage(imageN: int = currentImageN):
 	var imageArray = data[currentSet].slice(imageN*784, (imageN+1)*784)
 	print("loading")
@@ -43,6 +55,18 @@ func loadImage(imageN: int = currentImageN):
 		a[0][j] = imageArray[j]/255.0  # screw this .0 in particular, it screwed me up for an hour
 	#print(a[0])
 	currentImageN += 1
+"""
+
+func loadImage(imageN: int = currentImageN):
+	if (imageN + 1) * 784 > data[currentSet].size():
+		print("Incomplete image data, stopping at image index: ", imageN)
+		return
+	var imageArray = data[currentSet].slice(imageN * 784, (imageN + 1) * 784)
+	print("Loading image ", imageN)
+	for j in range(len(a[0])):  # Ensure this loops through valid indices
+		a[0][j] = imageArray[j] / 255.0
+	currentImageN += 1
+
 func currentImageCount():
 	return len(data[currentSet])/784
 
@@ -60,6 +84,7 @@ func forepropigate():
 			#print(z)
 			a[L][j] = σ(z[L][j])
 			#print(a[L][j])
+	#print(a[-1])
 
 func genIdealOut(size: int, indice: int = currentSetLabels[currentImageN]):
 	var out = []
@@ -110,14 +135,19 @@ func testAndFindAvgMods():
 	var currentSensitivities: Dictionary
 	var currentImageCount = currentImageCount()
 	loadImage()
+	print(a)
 	forepropigate()
+	print(a)
 	mods["weights"] = sensitivities(genIdealOut(len(a[-1])))["weights"]
 	mods["biases"] = sensitivities(genIdealOut(len(a[-1])))["biases"]
 	for i in range(1, currentImageCount):
-		print(i+1)
+		#print(i+1)
 		loadImage()
-		print(i+1)
+		#print(i+1)
 		forepropigate()
+		#print(a)
+		#printIn(28, 28)
+		print("forepropigated: ", currentImageN, ", out: ", a[-1])
 		currentSensitivities["weights"] = sensitivities(genIdealOut(len(a[-1])))["weights"]
 		currentSensitivities["biases"] = sensitivities(genIdealOut(len(a[-1])))["biases"]
 		for L in len(w):
