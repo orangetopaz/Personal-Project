@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgum43v7mmebe"]
+
+[ext_resource type="Script" path="res://base.gd" id="1_k0lnf"]
+[ext_resource type="Script" path="res://nnexp.gd" id="2_s3mum"]
+
+[node name="Node" type="Node"]
+script = ExtResource("1_k0lnf")
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("2_s3mum")
