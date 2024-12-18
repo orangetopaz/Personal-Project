@@ -2,15 +2,20 @@ extends base
 
 class_name NN
 
+var sett: String = "train_images"
+var settLabels: String = "train_labels"
+
 var nn: Dictionary = {"a": [], "w": [], "b": [], "z": [], "y": []}
 var modsPerImage: Dictionary = {"a": [], "w": [], "b": []}
 var totalMods: Dictionary = {"a": [], "w": [], "b": []}
 var layers = [784, 16, 16, 10]
-var LR = 1  # LR = learning rate, I like to call it step/stride size, cuz it's how much you move in the 13,002 dimentions downhill
+var LR = 0.1  # LR = learning rate, I like to call it step/stride size, cuz it's how much you move in the 13,002 dimentions downhill
+var cost = 0.0
+
 # Called when the node enters the scene tree for the first time.
 func _init() -> void:
 	print("Initialized")
-	for L in len(layers):  # initializing the arrays
+	for L in range(len(layers)):  # initializing the arrays
 		nn["a"].append([])
 		totalMods["a"].append([])
 		modsPerImage["a"].append([])
@@ -25,7 +30,7 @@ func _init() -> void:
 		
 		nn["z"].append([])
 		nn["y"].append([])
-		for j in layers[L]:
+		for j in range(layers[L]):
 			nn["a"][L].append(0.0)
 			totalMods["a"][L].append(0.0)
 			modsPerImage["a"][L].append(0.0)
@@ -34,22 +39,25 @@ func _init() -> void:
 			totalMods["w"][L].append([])
 			modsPerImage["w"][L].append([])
 			if L > 0:
-				nn["b"][L].append(rng.randf_range(-30, 30))
+				nn["b"][L].append(rng.randf_range(-0.1, 0.1)) # biases usualy initialized to 0 or a low number. if 0 the slope might be 0, and no changes can be made
 				totalMods["b"][L].append(0.0)
 				modsPerImage["b"][L].append(0.0)
 				
 				nn["z"][L].append(0.0)
 				nn["y"][L].append(0.0)
-				for k in layers[L-1]:
-					nn["w"][L][j].append(rng.randf_range(-5, 5))
+				for k in range(layers[L-1]):
+					nn["w"][L][j].append(rng.randf_range(-sqrt(6/layers[L-1]), sqrt(6/layers[L-1])))  # Xavier initialization for weight values (previously used -5-5)
 					totalMods["w"][L][j].append(0.0)
 					modsPerImage["w"][L][j].append(0.0)
 	
 	#print(nn["a"])
 	#print(nn["y"])
-	for reps in 100:
-		for image in 100: #len(data["test_images"])/784:
-			for val in len(data["test_images"].slice(image*784, (image+1)*784)):  # reset the image for 0-1 not 256 vals
+	var epochCount = 100
+	var imagesPerEpoch = 32
+	for epoch in epochCount:
+		var start = rng.randi_range(0, len(data[sett])/784)
+		for image in imagesPerEpoch: #len(data["test_images"])/784:
+			for val in len(data[sett].slice((start*784)+(image*784), (start*784)+((image+1)*784))):  # reset the image for 0-1 not 256 vals
 				nn["a"][0][val] = data["test_images"].slice(image*784, (image+1)*784)[val]/255.0  # load the next image
 			#print(nn["a"])
 			for L in len(layers):  # forward propigate
@@ -64,7 +72,7 @@ func _init() -> void:
 			#print(nn["a"])
 			#print(nn["z"])
 			for i in len(nn["y"][-1]): nn["y"][-1][i] = 0;
-			nn["y"][-1][data["test_labels"][image]] = 1
+			nn["y"][-1][data[settLabels][image]] = 1
 			#print(nn["y"][-1])
 			for L in range(len(layers)-1, 0, -1):  # backpropigate to find mods for this image
 				# technicaly this loop will end at 1, becuase i don't need the modifications for layer 0
@@ -101,17 +109,23 @@ func _init() -> void:
 			#print()
 			print(nn["y"][-1])
 			print(nn["a"][-1])
-			print("Image N: ", image, " Label: ", data["test_labels"][image]) #, "Cost: ", (nn["a"]-nn["y"])**2)
+			print("Image N: ", image, " Label: ", data[settLabels][image]) #, "Cost: ", (nn["a"]-nn["y"])**2)
 		
 		print("Out: ", nn["a"][-1], "\n     ", nn["y"][-1])
+		cost = 0.0
+		for i in range(len(nn["y"][-1])):
+			cost += (nn["a"][-1][i]-nn["y"][-1][i])**2
+		print("Epoch cost: ", cost)
 		
 		for L in range(1, len(layers)):
 			# apply & reset updates to weights and biases
 			for j in range(layers[L]):
-				nn["b"][L][j] -= (LR * totalMods["b"][L][j])  # negative becuase minimizing 
+				totalMods["b"][L][j] /= imagesPerEpoch
+				nn["b"][L][j] += (LR * totalMods["b"][L][j])  # negative becuase minimizing 
 				totalMods["b"][L][j] = 0.0
 				for k in range(layers[L-1]):
-					nn["w"][L][j][k] -= (LR * totalMods["w"][L][j][k])
+					totalMods["w"][L][j][k] /= imagesPerEpoch
+					nn["w"][L][j][k] += (LR * totalMods["w"][L][j][k])
 					totalMods["w"][L][j][k] = 0.0
 					
 
@@ -120,9 +134,9 @@ func _init() -> void:
 	for L in range(1, len(layers), 1):  # average the totalmods
 		# same applies here
 		for j in layers[L]:
-			totalMods["b"][L][j] /= (len(data["test_images"])/784)
+			totalMods["b"][L][j] /= (len(data[sett])/784)
 			for k in layers[L-1]:
-				totalMods["w"][L][j][k] /= (len(data["test_images"])/784)
+				totalMods["w"][L][j][k] /= (len(data[sett])/784)
 
 
 ##Chat GPT suggestions:
@@ -149,6 +163,9 @@ for i in range(len(nn["y"][-1])):
 	cost += (nn["a"][-1][i] - nn["y"][-1][i]) ** 2
 cost /= 2  # Mean squared error
 print("Epoch cost: ", cost)
+
+------------------------------------------------------------
+
 Debugging Tips
 Print Modifications: After each backpropagation step, print out small parts of totalMods to ensure they are being computed correctly.
 Use Validation Data: Evaluate on a separate validation set after each epoch to check generalization.
