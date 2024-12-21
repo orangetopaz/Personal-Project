@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://drrdqdoop2ouv"]
+[gd_scene load_steps=3 format=3 uid="uid://drrdqdoop2ouv"]
 
 [ext_resource type="Script" path="res://script.gd" id="1_n6vtf"]
+[ext_resource type="Script" path="res://label.gd" id="2_j8168"]
 
 [node name="all" type="Node2D"]
 script = ExtResource("1_n6vtf")
+
+[node name="Label" type="Label" parent="."]
+offset_left = 46.0
+offset_top = 36.0
+offset_right = 196.0
+offset_bottom = 59.0
+scale = Vector2(2.52, 2.52)
+text = "Cost:"
+autowrap_mode = 3
+script = ExtResource("2_j8168")
