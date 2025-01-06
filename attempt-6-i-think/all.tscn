@@ -12,6 +12,6 @@ offset_top = 36.0
 offset_right = 196.0
 offset_bottom = 59.0
 scale = Vector2(2.52, 2.52)
-text = "Cost:"
+text = "Cost: [VAL]"
 autowrap_mode = 3
 script = ExtResource("2_j8168")
