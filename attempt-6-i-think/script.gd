@@ -73,16 +73,16 @@ func initialize():
 		previous_layer_length = layers[L]
 
 func σ(x):
-	return 1/(1+e**(-x*0.3))
+	return 1/(1+e**(-0.3*x))
 
 func dσ(x):
-	var sig = σ(x)
-	return sig*(1-sig)
+	var part_sig: float = e**(-0.3*x)
+	return (0.3*part_sig)/(1+part_sig)**2
 
 func sum(list: Array):
 	var out = 0
-	for i in range(len(list)):
-		out += list[i]
+	for i in list:
+		out += i
 	return out
 
 func map(x:float, xmin:float, xmax:float, min:float, max:float):
@@ -93,6 +93,12 @@ func empty_array(size: int) -> Array:
 	for i in range(size):
 		arr.append(0.0)
 	return arr
+
+func empty_matrix(sizex:int, sizey:int) -> Array:
+	var out: Array = []
+	for y in range(sizey):
+		out.append(empty_array(sizex))
+	return out
 
 func set_input(imageN: int = 0, refined = true):
 	input = images.slice(imageN*input_size, (imageN+1)*input_size)
@@ -106,7 +112,7 @@ func foreprop():
 		for j in range(layers[L]):
 			z[L][j] = b[L][j]
 			for k in range(len(previous_layer)):
-				z[L][j] += previous_layer[k]*w[L][j][k]
+				z[L][j] += previous_layer[k]#*w[L][j][k]
 			a[L][j] = σ(z[L][j])
 		previous_layer = a[L]
 
@@ -134,17 +140,30 @@ var reps:int = 0
 func _process(delta: float) -> void:
 	#print(reps)
 	# foreprop
-	#set_input(0, false)  # constant image set cuz I just want to see if the math works, not if it can recognize
+	set_input(0, false)  # constant image set cuz I just want to see if the math works, not if it can recognize
 	foreprop()
 	# get/print cost
-	print(z)
-	print()
-	print(a)
-	print()
+	#print(z)
+	#print()
+	#print(a)
+	#print()
 	print(calc_cost(labels[0]))
-	print()
-	print()
-	print()
+	#print(labels[0])
+	#print()
+	#print()
+	#print()
+	print(a)
+	for L in range(len(y)-2, -1, -1):
+		#print("L: ",L)
+		var mods: Array = empty_array(len(y[L]))
+		for j in range(len(y[L])):
+			#print("j: ",j)
+			for k in range(len(y[L+1])):
+				#print("k: ",k)
+				mods[j] += w[L+1][k][j]*dσ(z[L+1][k])*2*(y[L+1][k]-a[L+1][k])  # very innefficient, find out how to do delta
+			mods[j] *= LR
+			y[L][j] = a[L][j]-mods[j]
+	print(y)
 	# get derrivative of last layers inputs (y for the last layer (but moving backwards) is the final ideal, and for previous layers it changes)
 		# get ∂ to each weight (a[L-1][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
 		# bias (1 * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
