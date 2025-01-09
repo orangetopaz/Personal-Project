@@ -112,7 +112,7 @@ func foreprop():
 		for j in range(layers[L]):
 			z[L][j] = b[L][j]
 			for k in range(len(previous_layer)):
-				z[L][j] += previous_layer[k]#*w[L][j][k]
+				z[L][j] += previous_layer[k]*w[L][j][k]
 			a[L][j] = σ(z[L][j])
 		previous_layer = a[L]
 
@@ -138,6 +138,9 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 var reps:int = 0
 func _process(delta: float) -> void:
+	for L in range(len(y)):  # resets it all, maybe find a more efficient way of doing but idk
+		for j in range(len(y[L])):
+			y[L][j] = 0.0
 	#print(reps)
 	# foreprop
 	set_input(0, false)  # constant image set cuz I just want to see if the math works, not if it can recognize
@@ -147,28 +150,33 @@ func _process(delta: float) -> void:
 	#print()
 	#print(a)
 	#print()
-	print(calc_cost(labels[0]))
-	#print(labels[0])
+	cost = calc_cost(labels[0])
+	print(cost)
+	print(a[-1])
 	#print()
 	#print()
 	#print()
-	print(a)
-	for L in range(len(y)-2, -1, -1):
-		#print("L: ",L)
-		var mods: Array = empty_array(len(y[L]))
+	#print(a)
+	for L in range(len(y)-1, 0, -1):  # the len(y)-1 makes it start on the last, don't ask. the 0 makes it stop at 1, idk
 		for j in range(len(y[L])):
-			#print("j: ",j)
-			for k in range(len(y[L+1])):
-				#print("k: ",k)
-				mods[j] += w[L+1][k][j]*dσ(z[L+1][k])*2*(y[L+1][k]-a[L+1][k])  # very innefficient, find out how to do delta
-			mods[j] *= LR
-			y[L][j] = a[L][j]-mods[j]
-	print(y)
+			for k in range(len(y[L-1])):
+				y[L-1][k] += w[L][j][k] * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
+				w[L][j][k] -= a[L-1][k] * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
+				b[L][j] -= 1 * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
+		for k in range(len(y[L-1])):
+			y[L-1][k] = a[L-1][k]-y[L-1][k]
+	#print(y)
+	#var previous_layer: Array = input
+	#for L in range(len(y)):
+		#for j in range(len(y[L])):
+			#for k in range(len(previous_layer)):
+				#pass
+		#previous_layer = a[L]
 	# get derrivative of last layers inputs (y for the last layer (but moving backwards) is the final ideal, and for previous layers it changes)
 		# get ∂ to each weight (a[L-1][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
 		# bias (1 * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
 		# previous neuron (a[L-1][j]) ∑(k): (w[L][j][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
-			# set y(ideal) for previous layers to current value - previously established derrivitive * LR: y[L][j] = a[L][j]-(∑(k): (w[L][j][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j])))*LR
+			# set y(ideal) for previous layers to current value - previously established derrivitive * LR: y[L][j] = a[L][j]-(∑(k): (w[L][j][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j])))*LR (INCORRECT THIS SUMS UP ALL THE WAYS STUFF CONNECTS TO IT, NOT ALL THE WAY IT CONNECTS TO THE NEXT LAYER!!!! PROB HAS SCREWED ME BEFORE)
 	# minus each weight by it's derrivitive times the LR: w[L][j][k] -= (∂w[L][j][k])*LR:		((a[L-1][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))*LR)
 	# bias: b[L][j] -= (∂b[L][j])*LR:		(1 * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
 	
