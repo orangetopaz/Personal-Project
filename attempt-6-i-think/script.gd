@@ -30,13 +30,11 @@ var data = load_data()
 
 const e = 2.718281828459045
 var rng = RandomNumberGenerator.new()
-#var pos_in_dimensions: Array = []
-#var ideal_pos: Array = []
-const LR: float = 0.03
+const LR: float = 0.5
 @onready var cost: float = 0.0
 
-var images = data["test_images"]
-var labels = data["test_labels"]
+var images = data["train_images"]
+var labels = data["train_labels"]
 var input_size: int = 784
 var input: Array = empty_array(784)
 
@@ -46,12 +44,8 @@ var w: Array = []
 var b: Array = []
 var z: Array = []
 var y: Array = []
-
-func per_axis_derivate(pos: Array, ideal: Array) -> Array:  # pd = partial derivative. I would use ∂ but it doesn't let me
-	var pds: Array = []
-	for i in range(len(pos)):
-		pds.append(2*(pos[i]-ideal[i]))  # derivative of the cost function (the other sections of adding each of the other costants for the other demensions don't matter becuse derivation puts constants at 0
-	return pds
+var wderivs: Array = []
+var bderivs: Array = []
 
 func initialize():
 	var previous_layer_length: float = input_size  # float because needed for other calcs. I could do the (float) operation (evaluate as float) but this is much easier
@@ -61,14 +55,19 @@ func initialize():
 		b.append([])
 		z.append([])
 		y.append([])
+		wderivs.append([])
+		bderivs.append([])
 		for j in range(layers[L]):
 			a[L].append(0.0)
 			w[L].append([])
-			b[L].append(0.0)
+			b[L].append(0.001)
 			z[L].append(0.0)
 			y[L].append(0.0)
+			wderivs[L].append([])
+			bderivs[L].append(0.0)
 			for k in range(previous_layer_length):
 				w[L][j].append(rng.randf_range(-sqrt(1/previous_layer_length), sqrt(1/previous_layer_length)))
+				wderivs[L][j].append(0.0)
 		#print(previous_layer_length)
 		previous_layer_length = layers[L]
 
@@ -100,7 +99,13 @@ func empty_matrix(sizex:int, sizey:int) -> Array:
 		out.append(empty_array(sizex))
 	return out
 
-func set_input(imageN: int = 0, refined = true):
+func snapped_array(arr: Array, nearest: float) -> Array:
+	var out: Array = []
+	for term in arr:
+		out.append(snapped(term, nearest))
+	return out
+
+func set_input(imageN: int = 0, refined = false):
 	input = images.slice(imageN*input_size, (imageN+1)*input_size)
 	if !refined:
 		for pixel in range(len(input)):
@@ -128,58 +133,62 @@ func calc_cost(ideal):
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	initialize()
-	#print(len(w[0][0]))
-	#print(len(w[0]))
-	#print(a)
-	#print(z)
-	#print(sum(input))
-	#print(w)
 
+
+var epoch_size: int = 32  # 32 cuz I'm not running through the whole stack every step. maybe if it ends up being a problem in the future
+@onready var epochs:int = 0
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-var reps:int = 0
 func _process(delta: float) -> void:
+	print("Epoch: ", epochs-1)
+	print("\nNN output last: \n", snapped_array(a[-1], 0.01))
+	print("Label last: ", labels[epoch_size-1], "\n")
+	print("Cost for Last Image: ", cost, "\n\n\n")
 	for L in range(len(y)):  # resets it all, maybe find a more efficient way of doing but idk
 		for j in range(len(y[L])):
 			y[L][j] = 0.0
-	#print(reps)
-	# foreprop
-	set_input(0, false)  # constant image set cuz I just want to see if the math works, not if it can recognize
-	foreprop()
-	# get/print cost
-	#print(z)
-	#print()
-	#print(a)
-	#print()
-	cost = calc_cost(labels[0])
-	print(cost)
-	print(a[-1])
-	#print()
-	#print()
-	#print()
-	#print(a)
-	for L in range(len(y)-1, 0, -1):  # the len(y)-1 makes it start on the last, don't ask. the 0 makes it stop at 1, idk
-		for j in range(len(y[L])):
-			for k in range(len(y[L-1])):
-				y[L-1][k] += w[L][j][k] * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
-				w[L][j][k] -= a[L-1][k] * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
-				b[L][j] -= 1 * dσ(z[L][j]) * 2*(a[L][j]-y[L][j])*LR
-		for k in range(len(y[L-1])):
-			y[L-1][k] = a[L-1][k]-y[L-1][k]
-	#print(y)
-	#var previous_layer: Array = input
-	#for L in range(len(y)):
-		#for j in range(len(y[L])):
-			#for k in range(len(previous_layer)):
-				#pass
-		#previous_layer = a[L]
-	# get derrivative of last layers inputs (y for the last layer (but moving backwards) is the final ideal, and for previous layers it changes)
-		# get ∂ to each weight (a[L-1][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
-		# bias (1 * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
-		# previous neuron (a[L-1][j]) ∑(k): (w[L][j][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
-			# set y(ideal) for previous layers to current value - previously established derrivitive * LR: y[L][j] = a[L][j]-(∑(k): (w[L][j][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j])))*LR (INCORRECT THIS SUMS UP ALL THE WAYS STUFF CONNECTS TO IT, NOT ALL THE WAY IT CONNECTS TO THE NEXT LAYER!!!! PROB HAS SCREWED ME BEFORE)
-	# minus each weight by it's derrivitive times the LR: w[L][j][k] -= (∂w[L][j][k])*LR:		((a[L-1][k] * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))*LR)
-	# bias: b[L][j] -= (∂b[L][j])*LR:		(1 * dσ(z[L][j]) * 2(a[L][j] - y[L][j]))
+			bderivs[L][j] = 0.0
+			for k in range(len(w[L][j])):
+				wderivs[L][j][k] = 0.0
 	
-	"""This will train as 1 image at a time, eventualy I will want to get the average modifications per weight/bias and use that for the changes. this works for now"""
 	
-	reps += 1
+	for image in range(epoch_size):
+		#var imageN: int = 0  # rng.randi_range(0, 59999)
+		set_input(image, false)
+		foreprop()
+		cost = calc_cost(labels[image])
+		#print(cost)
+		
+		# this runs throught the neural network and does the back propigation calculations
+		var next_in: Array = input
+		for L in range(len(y)-1, -1, -1):  # the len(y)-1 makes it start on the last, don't ask. the 0 makes it stop at 1, idk
+			if L == 0:
+				next_in = input
+			else:
+				next_in = a[L-1]
+			
+			#this runs throught the layer's length, starting from the last layer
+			for j in range(len(y[L])):
+				var delt: float = dσ(z[L][j]) * 2*(a[L][j]-y[L][j])  # calculating seperately for efficeincy 
+				# (delt means delta but deltas already a variable)
+				
+				
+				bderivs[L][j] += 1 * delt  # gets the ∂ of each 
+				
+				#this runs through the length of the previous layer that feeds into the one the j loop us running though
+				for k in range(len(next_in)):
+					#print(k)
+					#print("len: ", len(next_in))
+					if L != 0:
+						y[L-1][k] += w[L][j][k] * delt
+					wderivs[L][j][k] += next_in[k] * delt
+			for k in range(len(y[L-1])):  # fix if possible, try to integrate into the rest of the loops
+				y[L-1][k] = a[L-1][k]-y[L-1][k]
+		#print(wderivs)
+		#print(bderivs)
+	for L in range(len(w)):
+			for j in range(len(w[L])):
+				b[L][j] -= (bderivs[L][j]/epoch_size)*LR
+				for k in range(len(w[L][j])):
+					w[L][j][k] -= (wderivs[L][j][k]/epoch_size)*LR
+	
+	epochs += 1

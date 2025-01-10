@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://coe3j2l7p726n"]
+
+[ext_resource type="Script" path="res://matricies.gd" id="1_ghp63"]
+[ext_resource type="Script" path="res://code.gd" id="2_pmh3b"]
+
+[node name="matrix" type="Node2D"]
+script = ExtResource("1_ghp63")
+
+[node name="codes" type="Node2D" parent="."]
+script = ExtResource("2_pmh3b")
