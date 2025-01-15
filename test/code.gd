@@ -79,11 +79,12 @@ func _process(delta: float) -> void:
 		Bmod = delt
 		#INmod = # each N collumn in weight matrix corrisponds to the weights applied to that N previous neuron
 	
-	W = matrix_sub(W, scal(scal(Wmod, 1/32), LR))  # same as doing Wmod/32, gets the average from the mods
-	B = matrix_sub(B, scal(scal(Bmod, 1/32), LR))  # same as doing Bmod/32, gets the average from the mods
+	W = matrix_sub(W, scal(scal(Wmod, 1.0/32.0), LR))  # same as doing Wmod/32, gets the average from the mods
+	B = matrix_sub(B, scal(scal(Bmod, 1.0/32.0), LR))  # same as doing Bmod/32, gets the average from the mods
 	
 	for i in range(10): print(A[i][0], " ", Y[i])
 	print(labels[epoch_size-1])
 	print()
 	print(-sum(hadamard_multiply(Y, matrix_ln(A))))  # all the equations say log, not ln, but with machine learning its almost always ln
 	print("\n\n\n")
+	
