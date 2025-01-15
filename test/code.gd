@@ -30,50 +30,60 @@ var data = load_data()
 var images = data["train_images"]
 var labels = data["train_labels"]
 
-const e = 2.718281828459045
-var rng = RandomNumberGenerator.new()
-const LR: float = 0.03
-const epoch_size: int = 32
-
 var IN = matrix(784, 1)
 var W = matrix(10, 784)
 var B = matrix(10, 1)
 var A = matrix(10, 1)
 var Z = matrix(10, 1)
-
-func LReLU(x: float):
-	return max(0.05*x, x)
-
-func dLReLU(x: float):
-	if x > 0:
-		return 1
-	else:
-		return 0.05
-
-func σ(x: float):
-	return 1/(1+e**(-0.03*x))
-
-func dσ(x: float):
-	var part_sig: float = e**(-0.3*x)
-	return (0.3*part_sig)/(1+part_sig)**2
+var Y = matrix(10, 1)
+var Wmod = matrix(10, 784)
+var Bmod = matrix(10, 1)
+var INmod = matrix(784, 1)
 
 func load_image(imageN: int = 0):
-	for pixel in range(784): IN[pixel][0] = images[imageN*784+pixel]/255
+	for pixel in range(784): IN[pixel][0] = images[imageN*784.0+pixel]/255.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# initialize weights & biases<(unnecassary)
-	for i in range(len(W)): B[i][0] = 0.01; for j in range(len(W[i])): W[i][j] = rng.randf_range(-sqrt(1.0/784.0), sqrt(1.0/784.0))
+	for i in range(len(W)): B[i][0] = rng.randf_range(-0.01, 0.01); for j in range(len(W[i])): W[i][j] = rng.randf_range(-sqrt(1.0/784.0), sqrt(1.0/784.0))
+	load_image(0)
+	#print(IN)
+	#print(transpose(IN))
+	#print(matrix_dupe_down(transpose(IN), 3))
+
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	# foreprop
 	for image in epoch_size:
-		load_image(0)
+		load_image(image)
 		Z = matrix_add(matrix_multiply(W, IN), B)
-		# this would be a matrix function but martrix_sigmoid seems a bit specific
-		for i in range(10): A[i][0] = σ(Z[i][0])  # could be ReLU if I figure out how to get a cost function to work with it
+		A = matrix_σ(Z)  # could be ReLU if I figure out how to get a cost function to work with it
 		
+		# get ideal
+		Y = matrix(10, 1) # resets ideal
+		Wmod = matrix(10, 784)
+		Bmod = matrix(10, 1)
+		INmod = matrix(784, 1)
+		Y[labels[image]][0] = 1
+		#for i in range(10): print(A[i][0], " ", Y[i])
+		#print(labels[image])
+		#print()
+		
+		# derrivs
+		var dA: Array = matrix_sub(A, Y)  # this gets the derrivative for cross entropy cost/loss, in relation to 
+		var delt: Array = hadamard_multiply(matrix_dσ(Z), dA)  #scal(matrix_sub(A, Y), 2))) <- for MSE cost
+		Wmod = matrix_multiply(delt, transpose(IN)) #hadamard_multiply(matrix_dupe_down(transpose(IN), 10), matrix_dupe_across(delt, 784))
+		Bmod = delt
+		#INmod = # each N collumn in weight matrix corrisponds to the weights applied to that N previous neuron
 	
+	W = matrix_sub(W, scal(scal(Wmod, 1/32), LR))  # same as doing Wmod/32, gets the average from the mods
+	B = matrix_sub(B, scal(scal(Bmod, 1/32), LR))  # same as doing Bmod/32, gets the average from the mods
 	
+	for i in range(10): print(A[i][0], " ", Y[i])
+	print(labels[epoch_size-1])
+	print()
+	print(-sum(hadamard_multiply(Y, matrix_ln(A))))  # all the equations say log, not ln, but with machine learning its almost always ln
+	print("\n\n\n")

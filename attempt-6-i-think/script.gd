@@ -30,7 +30,7 @@ var data = load_data()
 
 const e = 2.718281828459045
 var rng = RandomNumberGenerator.new()
-const LR: float = 0.5
+const LR: float = 0.03
 @onready var cost: float = 0.0
 
 var images = data["train_images"]
@@ -130,6 +130,12 @@ func calc_cost(ideal):
 		final += (a[-1][i]-y[-1][i])**2
 	return final
 
+func sum_array(arr: Array):
+	var out: float = 0.0
+	for i in range(len(arr)):
+		out += arr[i]
+	return out
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	initialize()
@@ -168,7 +174,7 @@ func _process(delta: float) -> void:
 			
 			#this runs throught the layer's length, starting from the last layer
 			for j in range(len(y[L])):
-				var delt: float = dσ(z[L][j]) * 2*(a[L][j]-y[L][j])  # calculating seperately for efficeincy 
+				var delt: float = dσ(z[L][j]) * cost  # calculating seperately for efficeincy 
 				# (delt means delta but deltas already a variable)
 				
 				
@@ -179,8 +185,11 @@ func _process(delta: float) -> void:
 					#print(k)
 					#print("len: ", len(next_in))
 					if L != 0:
-						y[L-1][k] += w[L][j][k] * delt
+						y[L-1][k] += w[L][j][k]
 					wderivs[L][j][k] += next_in[k] * delt
+				for k in range(len(next_in)):
+					if L != 0:
+						y[L-1][k] *= delt
 			for k in range(len(y[L-1])):  # fix if possible, try to integrate into the rest of the loops
 				y[L-1][k] = a[L-1][k]-y[L-1][k]
 		#print(wderivs)
