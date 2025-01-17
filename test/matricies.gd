@@ -1,10 +1,10 @@
-extends Node2D
+extends Node
 
 class_name Matricies
 
 const e = 2.718281828459045
 var rng = RandomNumberGenerator.new()
-const LR: float = 0.03
+var LR: float = 0.03
 const epoch_size: int = 32
 
 func matrix(rows: int, cols: int) -> Array:

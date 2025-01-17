@@ -1,0 +1,128 @@
+[gd_scene load_steps=13 format=3 uid="uid://coe3j2l7p726n"]
+
+[ext_resource type="Script" path="res://main_window.gd" id="1_je1ot"]
+[ext_resource type="PackedScene" uid="uid://bocnxmmn2lkoi" path="res://NN.tscn" id="1_kposd"]
+[ext_resource type="Script" path="res://label.gd" id="3_lddek"]
+[ext_resource type="Script" path="res://lr_slider.gd" id="4_ihonv"]
+[ext_resource type="Script" path="res://LRLable.gd" id="5_kb2dp"]
+[ext_resource type="Texture2D" uid="uid://c7u578o5mylli" path="res://Textures/Play.png" id="6_3w3v6"]
+[ext_resource type="Texture2D" uid="uid://bkcw7gy2gpusg" path="res://Textures/Pause.png" id="7_cn0b4"]
+[ext_resource type="Texture2D" uid="uid://cmgp0jj4kxbno" path="res://Textures/StepFore.png" id="8_jc8a0"]
+[ext_resource type="Texture2D" uid="uid://d131ttogmd8gi" path="res://Textures/PressedStepFore.png" id="9_rwedv"]
+[ext_resource type="Texture2D" uid="uid://bwx0k8bgyjiqh" path="res://Textures/DisabledStepFore.png" id="10_3cehs"]
+[ext_resource type="Script" path="res://step_fore.gd" id="11_7cx07"]
+[ext_resource type="PackedScene" uid="uid://djb260s6fyay8" path="res://Graph.tscn" id="12_q8l2k"]
+
+[node name="TabContainer" type="TabContainer"]
+offset_top = 2.0
+offset_right = 1152.0
+offset_bottom = 647.0
+current_tab = 0
+script = ExtResource("1_je1ot")
+
+[node name="Train" type="TabBar" parent="."]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="matrix" parent="Train" instance=ExtResource("1_kposd")]
+
+[node name="Label" type="Label" parent="Train"]
+layout_mode = 0
+offset_left = 653.0
+offset_top = 7.0
+offset_right = 922.0
+offset_bottom = 60.0
+scale = Vector2(1.56, 1.56)
+text = "Cost: [Val]
+Epoch: [Val]"
+script = ExtResource("3_lddek")
+
+[node name="LRSlider" type="VSlider" parent="Train"]
+layout_mode = 0
+offset_left = 405.0
+offset_top = 111.0
+offset_right = 421.0
+offset_bottom = 466.0
+max_value = 50.0
+step = 0.01
+value = 0.03
+tick_count = 14
+script = ExtResource("4_ihonv")
+
+[node name="Label2" type="Label" parent="Train/LRSlider"]
+layout_mode = 0
+offset_left = -124.0
+offset_top = -53.0
+offset_right = 26.0
+offset_bottom = -30.0
+scale = Vector2(1.8, 1.8)
+text = "Learning Rate: [Val]"
+script = ExtResource("5_kb2dp")
+
+[node name="StartTraining" type="TextureButton" parent="Train"]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 437.0
+offset_right = 232.0
+offset_bottom = 509.0
+tooltip_text = "Pause/Unpause Training"
+toggle_mode = true
+texture_normal = ExtResource("6_3w3v6")
+texture_pressed = ExtResource("7_cn0b4")
+
+[node name="StepFore" type="TextureButton" parent="Train"]
+layout_mode = 0
+offset_left = 237.0
+offset_top = 436.0
+offset_right = 309.0
+offset_bottom = 508.0
+disabled = true
+texture_normal = ExtResource("8_jc8a0")
+texture_pressed = ExtResource("9_rwedv")
+texture_disabled = ExtResource("10_3cehs")
+script = ExtResource("11_7cx07")
+
+[node name="TabContainer" type="TabContainer" parent="Train"]
+layout_mode = 0
+offset_left = 527.0
+offset_top = 139.0
+offset_right = 1084.0
+offset_bottom = 552.0
+tab_alignment = 1
+current_tab = 0
+
+[node name="Graph" type="TabBar" parent="Train/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="graph" parent="Train/TabContainer/Graph" instance=ExtResource("12_q8l2k")]
+position = Vector2(5, 36)
+scale = Vector2(0.480002, 0.480002)
+Title = "Cost over Epochs"
+XAxisName = "Cost"
+YAxisName = "Epochs"
+
+[node name="Backpropagation Demonstration" type="TabBar" parent="Train/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Use" type="TabBar" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Learn" type="TabBar" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Settings" type="TabBar" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="matrix" parent="." instance=ExtResource("1_kposd")]
+
+[connection signal="value_changed" from="Train/LRSlider" to="Train/LRSlider" method="_on_value_changed"]
+[connection signal="toggled" from="Train/StartTraining" to="Train/StepFore" method="_on_start_training_toggled"]

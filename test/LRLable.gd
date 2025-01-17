@@ -8,4 +8,4 @@ func _ready() -> void:
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	$".".text = "Cost: " + str($"../matrix/process".cost) + "\nTraining Epoch: " + str($"../matrix/process".epochs)  # .. = the parent node, same as get_parent().cost
+	$".".text = "Learning Rate: " + str($"..".value)

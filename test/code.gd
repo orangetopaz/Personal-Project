@@ -30,6 +30,8 @@ var data = load_data()
 var images = data["train_images"]
 var labels = data["train_labels"]
 
+var cost: float = 0.0
+
 var IN = matrix(784, 1)
 var W = matrix(10, 784)
 var B = matrix(10, 1)
@@ -51,13 +53,16 @@ func _ready() -> void:
 	#print(IN)
 	#print(transpose(IN))
 	#print(matrix_dupe_down(transpose(IN), 3))
+	#get_node(".").paused = true
 
-
+var epochs: int = 0
+var true_image: int = 0
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	# foreprop
 	for image in epoch_size:
+		true_image
 		load_image(image)
 		Z = matrix_add(matrix_multiply(W, IN), B)
 		A = matrix_σ(Z)  # could be ReLU if I figure out how to get a cost function to work with it
@@ -85,6 +90,8 @@ func _process(delta: float) -> void:
 	for i in range(10): print(A[i][0], " ", Y[i])
 	print(labels[epoch_size-1])
 	print()
-	print(-sum(hadamard_multiply(Y, matrix_ln(A))))  # all the equations say log, not ln, but with machine learning its almost always ln
+	cost = -sum(hadamard_multiply(Y, matrix_ln(A)))
+	print(cost)  # all the equations say log, not ln, but with machine learning its almost always ln
 	print("\n\n\n")
-	
+	print(LR)
+	epochs += 1

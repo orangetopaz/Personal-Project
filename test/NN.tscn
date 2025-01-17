@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://bocnxmmn2lkoi"]
+
+[ext_resource type="Script" path="res://matricies.gd" id="1_odcwo"]
+[ext_resource type="Script" path="res://code.gd" id="2_vtjh0"]
+
+[node name="matrix" type="Node"]
+script = ExtResource("1_odcwo")
+
+[node name="process" type="Node" parent="."]
+script = ExtResource("2_vtjh0")
