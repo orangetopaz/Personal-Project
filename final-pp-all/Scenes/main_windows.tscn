@@ -1,0 +1,155 @@
+[gd_scene load_steps=15 format=3 uid="uid://b463f5ms3gwth"]
+
+[ext_resource type="PackedScene" uid="uid://dkila1emh6lk8" path="res://Scenes/neural_network.tscn" id="1_eyhti"]
+[ext_resource type="PackedScene" uid="uid://fgpgjbh4dl3i" path="res://Scenes/process.tscn" id="1_xsr8s"]
+[ext_resource type="PackedScene" uid="uid://2x4nx8lu48pg" path="res://Scenes/graph.tscn" id="2_wj8bt"]
+[ext_resource type="Texture2D" uid="uid://wwqesfgsgjcb" path="res://Resources/PlayButtons/Play.png" id="4_ylqn4"]
+[ext_resource type="Texture2D" uid="uid://dl4bho8owga7" path="res://Resources/PlayButtons/Pause.png" id="5_5ntnp"]
+[ext_resource type="Script" path="res://Scripts/Lables/lr_slider.gd" id="5_8tumn"]
+[ext_resource type="Script" path="res://Scripts/Lables/lr_label.gd" id="5_873x5"]
+[ext_resource type="Script" path="res://Scripts/StartTrain/play_button.gd" id="6_1vmm5"]
+[ext_resource type="Texture2D" uid="uid://b5gwsvu6qbxgg" path="res://Resources/PlayButtons/StepFore.png" id="6_ctfqb"]
+[ext_resource type="Texture2D" uid="uid://b7gq8ycowkw8h" path="res://Resources/PlayButtons/PressedStepFore.png" id="7_42poc"]
+[ext_resource type="Script" path="res://Scripts/Lables/epochs.gd" id="7_hc1nn"]
+[ext_resource type="Script" path="res://Scripts/Lables/cost.gd" id="8_31luu"]
+[ext_resource type="Texture2D" uid="uid://bbafl0ornyfp3" path="res://Resources/PlayButtons/DisabledStepFore.png" id="8_teur0"]
+[ext_resource type="Script" path="res://Scripts/StartTrain/texture_button.gd" id="9_0bkny"]
+
+[node name="Main Windows" type="TabContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+current_tab = 0
+
+[node name="Train" type="Control" parent="."]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="Lib" parent="Train" instance=ExtResource("1_xsr8s")]
+
+[node name="Layers" parent="Train" instance=ExtResource("1_eyhti")]
+position = Vector2(82, 165)
+script = null
+
+[node name="DataRepresentation" type="TabContainer" parent="Train"]
+layout_mode = 0
+offset_left = 905.0
+offset_top = 330.0
+offset_right = 1893.0
+offset_bottom = 1018.0
+tab_alignment = 1
+current_tab = 0
+
+[node name="Cost Graph" type="Control" parent="Train/DataRepresentation"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="Graph" parent="Train/DataRepresentation/Cost Graph" instance=ExtResource("2_wj8bt")]
+position = Vector2(70, 589)
+
+[node name="Backpropigation Representation" type="Control" parent="Train/DataRepresentation"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Layers" parent="Train/DataRepresentation/Backpropigation Representation" instance=ExtResource("1_eyhti")]
+position = Vector2(102, 97)
+script = null
+
+[node name="LRSlider" type="VSlider" parent="Train"]
+layout_mode = 0
+offset_left = 668.0
+offset_top = 190.0
+offset_right = 684.0
+offset_bottom = 979.0
+max_value = 20.0
+step = 0.01
+value = 0.03
+script = ExtResource("5_8tumn")
+
+[node name="LRLabel" type="Label" parent="Train/LRSlider"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.094
+anchor_top = -0.005
+anchor_right = 1.0
+offset_left = -106.504
+offset_top = -47.055
+offset_right = 29.0
+offset_bottom = -28.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.56, 1.56)
+text = "Learning Rate: [Val]"
+script = ExtResource("5_873x5")
+
+[node name="Lables" type="Control" parent="Train"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Epochs" type="Label" parent="Train/Lables"]
+layout_mode = 0
+offset_left = 1128.0
+offset_top = 78.0
+offset_right = 1405.0
+offset_bottom = 101.0
+scale = Vector2(1.7, 1.7)
+text = "Epochs: [Val]"
+script = ExtResource("7_hc1nn")
+
+[node name="Cost" type="Label" parent="Train/Lables"]
+layout_mode = 0
+offset_left = 1128.0
+offset_top = 129.0
+offset_right = 1405.0
+offset_bottom = 152.0
+scale = Vector2(1.7, 1.7)
+text = "Cost: [Val]"
+script = ExtResource("8_31luu")
+
+[node name="PlayButton" type="TextureButton" parent="Train"]
+layout_mode = 0
+offset_left = 200.0
+offset_top = 756.0
+offset_right = 272.0
+offset_bottom = 828.0
+scale = Vector2(2, 2)
+toggle_mode = true
+texture_normal = ExtResource("4_ylqn4")
+texture_pressed = ExtResource("5_5ntnp")
+script = ExtResource("6_1vmm5")
+
+[node name="StepButton" type="TextureButton" parent="Train/PlayButton"]
+layout_mode = 0
+offset_left = 74.0
+offset_right = 146.0
+offset_bottom = 72.0
+texture_normal = ExtResource("6_ctfqb")
+texture_pressed = ExtResource("7_42poc")
+texture_disabled = ExtResource("8_teur0")
+script = ExtResource("9_0bkny")
+
+[node name="Use" type="Control" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Learn" type="Control" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="Settings" type="Control" parent="."]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[connection signal="tab_selected" from="." to="Train" method="_on_main_windows_tab_selected"]
+[connection signal="value_changed" from="Train/LRSlider" to="Train/LRSlider" method="_on_value_changed"]
+[connection signal="value_changed" from="Train/LRSlider" to="Train/LRSlider/LRLabel" method="_on_lr_slider_value_changed"]
+[connection signal="toggled" from="Train/PlayButton" to="Train/PlayButton" method="_on_toggled"]
+[connection signal="toggled" from="Train/PlayButton" to="Train/PlayButton/StepButton" method="_on_texture_button_toggled"]
+[connection signal="button_down" from="Train/PlayButton/StepButton" to="Train/Lib" method="_on_step_button_button_down"]

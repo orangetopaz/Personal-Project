@@ -11,11 +11,11 @@ config_version=5
 [application]
 
 config/name="Final PP All"
-run/main_scene="res://main_windows.tscn"
+run/main_scene="res://Scenes/main_windows.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
-config/icon="res://icon.svg"
+config/icon="res://Resources/icon.svg"
 
 [display]
 
-window/size/viewport_width=1280
-window/size/viewport_height=720
+window/size/viewport_width=1920
+window/size/viewport_height=1080

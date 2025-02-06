@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://dg5i52dvdtw8g"]
+
+[ext_resource type="Script" path="res://Scripts/Drawing Pad/drawing_surface.gd" id="1_xf23t"]
+
+[node name="Drawing Surface" type="Node2D"]
+script = ExtResource("1_xf23t")
+
+[node name="Line2D" type="Line2D" parent="."]

@@ -56,14 +56,19 @@ func _ready() -> void:
 	#get_node(".").paused = true
 
 var epochs: int = 0
-var start_image: int = 0
+var base_image: int = 0
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
-	# foreprop
+	#print($"..".paused)
+	if !$"..".paused:
+		epoch()
+
+
+func epoch():
 	for image in epoch_size:
-		start_image = rng.randi_range(0, (len(images)/784)-epoch_size)
-		load_image(start_image+image)
+		base_image = rng.randi_range(0, (len(images)/784)-epoch_size)
+		load_image(image)
 		Z = matrix_add(matrix_multiply(W, IN), B)
 		A = matrix_σ(Z)  # could be ReLU if I figure out how to get a cost function to work with it
 		
@@ -72,9 +77,9 @@ func _process(delta: float) -> void:
 		Wmod = matrix(10, 784)
 		Bmod = matrix(10, 1)
 		INmod = matrix(784, 1)
-		Y[labels[start_image+image]][0] = 1
+		Y[labels[image]][0] = 1
 		#for i in range(10): print(A[i][0], " ", Y[i])
-		#print(labels[start_image+image])
+		#print(labels[image])
 		#print()
 		
 		# derrivs
@@ -92,6 +97,6 @@ func _process(delta: float) -> void:
 	print()
 	cost = -sum(hadamard_multiply(Y, matrix_ln(A)))
 	print(cost)  # all the equations say log, not ln, but with machine learning its almost always ln
-	print("\n\n\n")
 	print(LR)
+	print("\n\n\n")
 	epochs += 1
