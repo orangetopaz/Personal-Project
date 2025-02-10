@@ -2,11 +2,11 @@ extends Node
 
 class_name Matricies
 
-const e = 2.718281828459045
+const e = exp(1)
 var rng = RandomNumberGenerator.new()
 var LR: float = 0.03
 @export var paused: bool = true
-const epoch_size: int = 32
+const epoch_size: float = 32
 
 func matrix(rows: int, cols: int) -> Array:
 	var out: Array = []
@@ -35,10 +35,10 @@ func matrix_dupe_down(m: Array, heit: int = 2) -> Array:
 	for i in range(heit): out += m
 	return out
 
-func dot(m1: Array, m2: Array) -> float:
-	var out
-	for term in range(len(m1)):
-		out += float(m1[term])*float(m2[term])
+#func dot(m1: Array, m2: Array) -> float:
+	#var out
+	#for term in range(len(m1)):
+		#out += float(m1[term])*float(m2[term])
 	return out
 
 func scal(m: Array, sc: float) -> Array:
@@ -119,7 +119,7 @@ func get_column(m: Array, index: int) -> Array:
 func snapped_matrix(m: Array, nearest: float) -> Array:
 	var out: Array = matrix(m.size(), m[0].size())
 	for row in range(len(m)):
-		for col in range(m[row]):
+		for col in range(len(m[row])):
 			out[row][col] = snapped(m[row][col], nearest)
 	return out
 
@@ -133,10 +133,10 @@ func dLReLU(x: float) -> float:
 		return 0.05
 
 func σ(x: float) -> float:
-	return 1/(1+e**(-0.03*x))
+	return 1/(1+exp(-0.3*x))
 
 func dσ(x: float) -> float:
-	var part_sig: float = e**(-0.3*x)
+	var part_sig: float = exp(-0.3*x)
 	return (0.3*part_sig)/(1+part_sig)**2
 
 func logBase(x: float, base: float) -> float:
@@ -176,6 +176,13 @@ func matrix_dσ(m: Array) -> Array:
 #func _process(delta: float) -> void:
 	#print(paused)
 
+func MatrixMaxIndex(m: Array) -> Array:
+	var out: Array = [0,0]
+	for i in range(len(m)):
+		for j in range(len(m[i])):
+			if m[i][j] > m[out[0]][out[1]]:
+				out = [i, j]
+	return out
 
 func _on_step_button_button_down() -> void:
 	$"Code".epoch()

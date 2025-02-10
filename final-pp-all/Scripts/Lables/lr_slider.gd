@@ -10,5 +10,5 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	pass
 
-func _on_value_changed(value: float) -> void:
-	$"../Lib/Code".LR = value
+func _on_value_changed(val: float) -> void:
+	$"../Lib/Code".LR = val
