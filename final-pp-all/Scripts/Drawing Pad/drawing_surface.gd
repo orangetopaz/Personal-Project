@@ -1,8 +1,7 @@
-extends Node2D
+extends GridContainer
 
 @onready var _lines: Node2D = $Line2D
 
-@export var PixelDimentions: Vector2i
 var _pressed: bool = false
 var _current_line: Line2D = null
 

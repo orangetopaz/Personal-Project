@@ -44,23 +44,28 @@ var Wmod = matrix(10, 784)
 var Bmod = matrix(10, 1)
 var INmod = matrix(784, 1)
 
-func load_image(imageN: int = 0):
-	#if train:
-	for pixel in range(784): IN[pixel][0] = images[imageN*784.0+pixel]/255.0
-	#else:
-		#for pixel in range(784): IN[pixel][0] = tests[imageN*784.0+pixel]/255.0
+func load_image(train: bool, imageN: int):
+	if train:
+		for pixel in range(784): IN[pixel][0] = images[(imageN*784.0)+pixel]/255.0
+	else:
+		for pixel in range(784): IN[pixel][0] = tests[(imageN*784.0)+pixel]/255.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	# initialize weights & biases<(unnecassary)
 	for i in range(len(W)): B[i][0] = rng.randf_range(-0.01, 0.01); for j in range(len(W[i])): W[i][j] = rng.randf_range(-sqrt(1.0/784.0), sqrt(1.0/784.0))
-	load_image(0)
+	#load_image(train0)
 	#print(IN)
 	#print(transpose(IN))
 	#print(matrix_dupe_down(transpose(IN), 3))
 	#get_node(".").paused = true
 
 var epochs: int = 0
+var corrects: int = 0
+var testCorrects: int = 0
+var accuracy: float = 0.0
+var testAccuracy: float = 0.0
+
 var base_image: int = 0
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -75,6 +80,7 @@ func foreprop():
 	A = matrix_σ(Z)  # could be ReLU if I figure out how to get a cost function to work with it
 
 func epoch():
+	epochs += 1
 	base_image = rng.randi_range(0, (len(images)/784)-epoch_size)
 	#A = matrix(10, 1)
 	#Z = matrix(10, 1)
@@ -84,9 +90,8 @@ func epoch():
 	Bmod = matrix(10, 1)
 	cost = 0
 	for image in range(epoch_size):
-		load_image(base_image+image) 
-		Z = matrix_add(matrix_multiply(W, IN), B)
-		A = matrix_σ(Z)  # could be ReLU if I figure out how to get a cost function to work with it
+		load_image(true, base_image+image)
+		foreprop()
 		
 		# get ideal
 		Y = matrix(10, 1) # resets ideal
@@ -98,28 +103,34 @@ func epoch():
 		Wmod = matrix_add(Wmod, matrix_multiply(delt, transpose(IN))) #hadamard_multiply(matrix_dupe_down(transpose(IN), 10), matrix_dupe_across(delt, 784))
 		Bmod = matrix_add(Bmod, delt)  
 		cost += -sum(hadamard_multiply(Y, matrix_ln(A)))
-	for i in range(10): print(A[i][0], " ", Y[i])
-	print(labels[base_image+epoch_size-1])
-	print()
-	cost /= epoch_size
-	print(cost)  # all the equations say log, not ln, but with machine learning its almost always ln
-	print(LR)
-	print("\n\n\n")
+	
 	W = matrix_sub(W, scal(scal(Wmod, 1.0/epoch_size), LR))  # same as doing Wmod/32, gets the average from the mods
 	B = matrix_sub(B, scal(scal(Bmod, 1.0/epoch_size), LR))  # same as doing Bmod/32, gets the average from the mods
 	
+	for i in range(10): print(A[i][0], " ", Y[i])
 	
-	epochs += 1
-	#print("Accuracy: ", test(50))
-
-func test(Ntests: int = len(testl)) -> float:
-	var ac: float = 0
-	for image in range(Ntests):
-		load_image(image)
-		foreprop()
-		#print(A)
-		#print(testl[image])
-		if MatrixMaxIndex(A)[0] == testl[image]:
-			ac += 1
-	ac /= Ntests
-	return ac
+	var lastimagelabelindex: int = base_image+epoch_size-1
+	print(labels[lastimagelabelindex])
+	print()
+	
+	
+	cost /= epoch_size
+	print("Cost of Epoch: ", cost)  # all the equations say log, not ln, but with machine learning its almost always ln
+	print("Learning Rate: ", LR)
+	if MatrixMaxIndex(A)[0] == labels[lastimagelabelindex]:
+		corrects += 1
+	
+	var testImageindex: int = rng.randi_range(0, len(testl)-2)
+	load_image(false, testImageindex)
+	foreprop()
+	if MatrixMaxIndex(A)[0] == testl[testImageindex]:
+		testCorrects += 1
+	
+	print("# Correct: ", corrects)
+	print("# Non-trained Correct: ", testCorrects)
+	print("# Epochs: ", epochs)
+	accuracy = float(corrects)/float(epochs)
+	print("Accuracy: ", accuracy)
+	testAccuracy = float(testCorrects)/float(epochs)
+	print("Accuracy with non-training images: ", testAccuracy)
+	print("\n\n\n")

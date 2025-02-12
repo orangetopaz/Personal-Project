@@ -6,7 +6,7 @@ const e = exp(1)
 var rng = RandomNumberGenerator.new()
 var LR: float = 0.03
 @export var paused: bool = true
-const epoch_size: float = 32
+const epoch_size: float = 100
 
 func matrix(rows: int, cols: int) -> Array:
 	var out: Array = []

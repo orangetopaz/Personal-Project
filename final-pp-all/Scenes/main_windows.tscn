@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://b463f5ms3gwth"]
+[gd_scene load_steps=16 format=3 uid="uid://b463f5ms3gwth"]
 
 [ext_resource type="PackedScene" uid="uid://dkila1emh6lk8" path="res://Scenes/neural_network.tscn" id="1_eyhti"]
 [ext_resource type="PackedScene" uid="uid://fgpgjbh4dl3i" path="res://Scenes/process.tscn" id="1_xsr8s"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://Scripts/Lables/cost.gd" id="8_31luu"]
 [ext_resource type="Texture2D" uid="uid://bbafl0ornyfp3" path="res://Resources/PlayButtons/DisabledStepFore.png" id="8_teur0"]
 [ext_resource type="Script" path="res://Scripts/StartTrain/texture_button.gd" id="9_0bkny"]
+[ext_resource type="PackedScene" uid="uid://dg5i52dvdtw8g" path="res://Scenes/drawing_surface.tscn" id="15_egho0"]
 
 [node name="Main Windows" type="TabContainer"]
 anchors_preset = 15
@@ -136,6 +137,19 @@ script = ExtResource("9_0bkny")
 visible = false
 layout_mode = 2
 metadata/_tab_index = 1
+
+[node name="Drawing Surface" parent="Use" instance=ExtResource("15_egho0")]
+layout_mode = 0
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 81.0
+offset_top = 76.0
+offset_right = 81.0
+offset_bottom = 76.0
+grow_horizontal = 1
+grow_vertical = 1
+scale = Vector2(6.4, 6.4)
 
 [node name="Learn" type="Control" parent="."]
 visible = false

@@ -2,7 +2,16 @@
 
 [ext_resource type="Script" path="res://Scripts/Drawing Pad/drawing_surface.gd" id="1_xf23t"]
 
-[node name="Drawing Surface" type="Node2D"]
+[node name="Drawing Surface" type="GridContainer"]
+clip_contents = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1420.0
+offset_bottom = -580.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 28
 script = ExtResource("1_xf23t")
 
 [node name="Line2D" type="Line2D" parent="."]

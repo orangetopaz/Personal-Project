@@ -13,7 +13,6 @@ config_version=5
 config/name="Final PP All"
 run/main_scene="res://Scenes/main_windows.tscn"
 config/features=PackedStringArray("4.3", "Forward Plus")
-config/icon="res://Resources/icon.svg"
 
 [display]
 
